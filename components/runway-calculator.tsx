@@ -150,7 +150,7 @@ export function RunwayCalculator() {
               <Calculator className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">Indian Financial Runway</h1>
+              <h1 className="text-xl font-bold text-sidebar-foreground">Kriti Elder Care Financial Runway Calculator</h1>
               <p className="text-sm text-muted-foreground">Plan your financial future</p>
             </div>
           </div>
