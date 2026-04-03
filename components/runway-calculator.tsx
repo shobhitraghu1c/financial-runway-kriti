@@ -36,23 +36,21 @@ interface YearData {
   remainingMonths?: number
 }
 
-// Format number in Indian numbering system
+// Format number in Indian numbering system with full precision
 function formatIndianNumber(num: number): string {
   const absNum = Math.abs(num)
   const sign = num < 0 ? "-" : ""
   
-  if (absNum >= 10000000) {
-    return sign + (absNum / 10000000).toFixed(2) + " Cr"
-  } else if (absNum >= 100000) {
-    return sign + (absNum / 100000).toFixed(2) + " L"
-  } else if (absNum >= 1000) {
-    const numStr = Math.round(absNum).toString()
-    const lastThree = numStr.slice(-3)
-    const rest = numStr.slice(0, -3)
+  // Format with Indian comma system (XX,XX,XXX.XX)
+  const formatWithIndianCommas = (n: number): string => {
+    const [intPart, decPart] = n.toFixed(2).split(".")
+    const lastThree = intPart.slice(-3)
+    const rest = intPart.slice(0, -3)
     const formatted = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + (rest ? "," : "") + lastThree
-    return sign + formatted
+    return formatted + "." + decPart
   }
-  return sign + Math.round(absNum).toString()
+  
+  return sign + formatWithIndianCommas(absNum)
 }
 
 // Format for Y-axis (shorter format)
