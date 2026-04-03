@@ -64,8 +64,8 @@ function formatYAxis(value: number): string {
 }
 
 export function RunwayCalculator() {
-  const [initialFundLakhs, setInitialFundLakhs] = useState(50)
-  const [monthlyExpense, setMonthlyExpense] = useState(50000)
+  const [initialFundLakhs, setInitialFundLakhs] = useState(100) // 1 Crore
+  const [monthlyExpense, setMonthlyExpense] = useState(40000) // 4.8L yearly
   const [interestRate, setInterestRate] = useState(7)
   const [inflationRate, setInflationRate] = useState(5)
 
@@ -78,18 +78,35 @@ export function RunwayCalculator() {
     // Year 1 opening is the initial fund
     let openingBalance = initialFundLakhs * 100000
 
+    console.log("[v0] Starting calculation with:", {
+      initialFund: initialFundLakhs * 100000,
+      yearlyExpense: yearlyCost,
+      interestRate,
+      inflationRate
+    })
+
     while (openingBalance > 0 && year < 100) {
       year++
       
       // For year 1: Opening = Initial Fund, no interest added
-      // For year 2+: Opening = Previous Balance * (1 + interest rate)
+      // For year 2+: Opening = Previous Balance × (1 + interest rate)
       const interestAdded = year === 1 ? 0 : previousBalance * (interestRate / 100)
       if (year > 1) {
         openingBalance = previousBalance + interestAdded
       }
       
-      // Deduct yearly cost from opening balance to get closing balance
+      // Deduct yearly cost from opening balance to get closing balance (this is "Balance" in spreadsheet)
       const closingBalance = openingBalance - yearlyCost
+
+      if (year <= 5) {
+        console.log(`[v0] Year ${year}:`, {
+          previousBalance,
+          interestAdded,
+          openingBalance,
+          yearlyCost,
+          closingBalance
+        })
+      }
       
       data.push({
         year,
@@ -111,6 +128,8 @@ export function RunwayCalculator() {
       // Inflate yearly cost for next year
       yearlyCost = yearlyCost * (1 + inflationRate / 100)
     }
+
+    console.log("[v0] Total runway years:", year)
 
     return {
       runwayYears: year,
