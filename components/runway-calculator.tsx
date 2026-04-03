@@ -32,6 +32,8 @@ interface YearData {
   openingBalance: number
   yearlyCost: number
   closingBalance: number
+  isPartialYear?: boolean
+  remainingMonths?: number
 }
 
 // Format number in Indian numbering system
@@ -69,21 +71,15 @@ export function RunwayCalculator() {
   const [interestRate, setInterestRate] = useState(7)
   const [inflationRate, setInflationRate] = useState(5)
 
-  const { runwayYears, yearlyData } = useMemo(() => {
+  const { runwayYears, runwayMonths, yearlyData } = useMemo(() => {
     const data: YearData[] = []
     let previousBalance = 0 // Previous year's balance (after cost deduction)
     let yearlyCost = monthlyExpense * 12 // Year 1 cost
     let year = 0
+    let finalMonths = 0
 
     // Year 1 opening is the initial fund
     let openingBalance = initialFundLakhs * 100000
-
-    console.log("[v0] Starting calculation with:", {
-      initialFund: initialFundLakhs * 100000,
-      yearlyExpense: yearlyCost,
-      interestRate,
-      inflationRate
-    })
 
     while (openingBalance > 0 && year < 100) {
       year++
@@ -95,18 +91,12 @@ export function RunwayCalculator() {
         openingBalance = previousBalance + interestAdded
       }
       
-      // Deduct yearly cost from opening balance to get closing balance (this is "Balance" in spreadsheet)
+      // Calculate next year's cost (after inflation)
+      const nextYearlyCost = yearlyCost * (1 + inflationRate / 100)
+      const currentMonthlyCost = yearlyCost / 12
+      
+      // Deduct yearly cost from opening balance to get closing balance
       const closingBalance = openingBalance - yearlyCost
-
-      if (year <= 5) {
-        console.log(`[v0] Year ${year}:`, {
-          previousBalance,
-          interestAdded,
-          openingBalance,
-          yearlyCost,
-          closingBalance
-        })
-      }
       
       data.push({
         year,
@@ -119,6 +109,45 @@ export function RunwayCalculator() {
       
       // If balance goes zero or negative, stop
       if (closingBalance <= 0) {
+        // Calculate remaining months if balance went negative
+        if (closingBalance < 0) {
+          // How many months could we actually afford?
+          const actualMonths = Math.floor(openingBalance / currentMonthlyCost)
+          finalMonths = actualMonths
+          // Update last entry to show partial year
+          data[data.length - 1].isPartialYear = true
+          data[data.length - 1].remainingMonths = actualMonths
+        }
+        break
+      }
+      
+      // Check if closing balance can cover next year's expense
+      // If not, calculate remaining months and stop
+      const nextYearOpening = closingBalance * (1 + interestRate / 100)
+      if (nextYearOpening < nextYearlyCost) {
+        // Can't afford full next year - calculate remaining months
+        const nextMonthlyCost = nextYearlyCost / 12
+        const remainingMonths = Math.floor(nextYearOpening / nextMonthlyCost)
+        
+        if (remainingMonths > 0) {
+          // Add partial year entry
+          year++
+          const partialInterest = closingBalance * (interestRate / 100)
+          const partialOpening = closingBalance + partialInterest
+          const partialCost = nextMonthlyCost * remainingMonths
+          
+          data.push({
+            year,
+            previousBalance: closingBalance,
+            interestAdded: partialInterest,
+            openingBalance: partialOpening,
+            yearlyCost: partialCost,
+            closingBalance: partialOpening - partialCost,
+            isPartialYear: true,
+            remainingMonths,
+          })
+        }
+        finalMonths = remainingMonths
         break
       }
       
@@ -126,13 +155,12 @@ export function RunwayCalculator() {
       previousBalance = closingBalance
       
       // Inflate yearly cost for next year
-      yearlyCost = yearlyCost * (1 + inflationRate / 100)
+      yearlyCost = nextYearlyCost
     }
 
-    console.log("[v0] Total runway years:", year)
-
     return {
-      runwayYears: year,
+      runwayYears: year - (finalMonths > 0 && finalMonths < 12 ? 1 : 0),
+      runwayMonths: finalMonths,
       yearlyData: data,
     }
   }, [initialFundLakhs, monthlyExpense, interestRate, inflationRate])
@@ -258,8 +286,18 @@ export function RunwayCalculator() {
                       {runwayYears}
                     </span>
                     <span className="text-2xl lg:text-3xl font-medium text-foreground">
-                      Years
+                      {runwayYears === 1 ? "Year" : "Years"}
                     </span>
+                    {runwayMonths > 0 && (
+                      <>
+                        <span className="text-3xl lg:text-4xl font-bold text-primary">
+                          {runwayMonths}
+                        </span>
+                        <span className="text-xl lg:text-2xl font-medium text-foreground">
+                          {runwayMonths === 1 ? "Month" : "Months"}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -337,8 +375,10 @@ export function RunwayCalculator() {
                   </TableHeader>
                   <TableBody>
                     {yearlyData.map((row) => (
-                      <TableRow key={row.year} className="border-border hover:bg-secondary/50">
-                        <TableCell className="font-medium text-foreground">{row.year}</TableCell>
+                      <TableRow key={row.year} className={`border-border hover:bg-secondary/50 ${row.isPartialYear ? "bg-primary/5" : ""}`}>
+                        <TableCell className="font-medium text-foreground">
+                          {row.isPartialYear ? `${row.year} (${row.remainingMonths}m)` : row.year}
+                        </TableCell>
                         <TableCell className="text-right text-muted-foreground tabular-nums">
                           {row.year === 1 ? "-" : formatIndianNumber(row.previousBalance)}
                         </TableCell>
@@ -350,6 +390,7 @@ export function RunwayCalculator() {
                         </TableCell>
                         <TableCell className="text-right text-destructive tabular-nums">
                           -{formatIndianNumber(row.yearlyCost)}
+                          {row.isPartialYear && <span className="text-xs ml-1">({row.remainingMonths}m)</span>}
                         </TableCell>
                         <TableCell className={`text-right font-medium tabular-nums ${row.closingBalance < 0 ? "text-destructive" : "text-foreground"}`}>
                           {formatIndianNumber(row.closingBalance)}
