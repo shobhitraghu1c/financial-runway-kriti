@@ -27,8 +27,8 @@ import { TrendingDown, Calculator, IndianRupee } from "lucide-react"
 
 interface YearData {
   year: number
-  previousClosing: number
-  netInterestAdded: number
+  previousBalance: number
+  interestAdded: number
   openingBalance: number
   yearlyCost: number
   closingBalance: number
@@ -71,27 +71,30 @@ export function RunwayCalculator() {
 
   const { runwayYears, yearlyData } = useMemo(() => {
     const data: YearData[] = []
-    let previousClosing = 0 // Previous year's closing balance
-    let balance = initialFundLakhs * 100000 // Convert lakhs to rupees (this is Year 1 opening)
+    let previousBalance = 0 // Previous year's balance (after cost deduction)
     let yearlyCost = monthlyExpense * 12 // Year 1 cost
     let year = 0
-    const netInterestRate = interestRate - inflationRate // Net interest rate after inflation
 
-    while (balance > 0 && year < 100) {
+    // Year 1 opening is the initial fund
+    let openingBalance = initialFundLakhs * 100000
+
+    while (openingBalance > 0 && year < 100) {
       year++
       
-      // For year 1, there's no previous closing or interest
-      // For subsequent years, opening = previous closing + net interest on previous closing
-      const netInterestAdded = year === 1 ? 0 : previousClosing * (netInterestRate / 100)
-      const openingBalance = year === 1 ? balance : previousClosing + netInterestAdded
+      // For year 1: Opening = Initial Fund, no interest added
+      // For year 2+: Opening = Previous Balance * (1 + interest rate)
+      const interestAdded = year === 1 ? 0 : previousBalance * (interestRate / 100)
+      if (year > 1) {
+        openingBalance = previousBalance + interestAdded
+      }
       
-      // Deduct annual expense at the START of the year
+      // Deduct yearly cost from opening balance to get closing balance
       const closingBalance = openingBalance - yearlyCost
       
       data.push({
         year,
-        previousClosing: year === 1 ? 0 : previousClosing,
-        netInterestAdded,
+        previousBalance: year === 1 ? 0 : previousBalance,
+        interestAdded,
         openingBalance,
         yearlyCost,
         closingBalance,
@@ -102,14 +105,11 @@ export function RunwayCalculator() {
         break
       }
       
-      // Store this year's closing for next iteration
-      previousClosing = closingBalance
+      // Store this year's closing balance for next iteration
+      previousBalance = closingBalance
       
       // Inflate yearly cost for next year
       yearlyCost = yearlyCost * (1 + inflationRate / 100)
-      
-      // Set balance for next iteration (will be recalculated but needed for while condition)
-      balance = previousClosing + previousClosing * (netInterestRate / 100)
     }
 
     return {
@@ -309,11 +309,11 @@ export function RunwayCalculator() {
                   <TableHeader>
                     <TableRow className="border-border hover:bg-secondary/50">
                       <TableHead className="text-muted-foreground font-semibold">Year</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Prev. Closing (₹)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Net Interest ({interestRate - inflationRate}%)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Opening Balance (₹)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Yearly Cost (₹)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Closing Balance (₹)</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right">Prev. Balance</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right">Interest ({interestRate}%)</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right">Opening Balance</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right">Cost (+{inflationRate}% YoY)</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right">Balance</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -321,10 +321,10 @@ export function RunwayCalculator() {
                       <TableRow key={row.year} className="border-border hover:bg-secondary/50">
                         <TableCell className="font-medium text-foreground">{row.year}</TableCell>
                         <TableCell className="text-right text-muted-foreground tabular-nums">
-                          {row.year === 1 ? "-" : formatIndianNumber(row.previousClosing)}
+                          {row.year === 1 ? "-" : formatIndianNumber(row.previousBalance)}
                         </TableCell>
                         <TableCell className="text-right text-primary tabular-nums">
-                          {row.year === 1 ? "-" : `+${formatIndianNumber(row.netInterestAdded)}`}
+                          {row.year === 1 ? "-" : `+${formatIndianNumber(row.interestAdded)}`}
                         </TableCell>
                         <TableCell className="text-right text-foreground tabular-nums">
                           {formatIndianNumber(row.openingBalance)}
