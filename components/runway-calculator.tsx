@@ -143,22 +143,23 @@ export function RunwayCalculator() {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col lg:flex-row">
-        {/* Sidebar */}
-        <aside className="w-full lg:w-80 xl:w-96 bg-sidebar border-r border-sidebar-border p-6 lg:min-h-screen">
-          <div className="flex items-center gap-3 mb-8">
+        {/* Sidebar - Collapsible on mobile */}
+        <aside className="w-full lg:w-80 xl:w-96 bg-sidebar border-b lg:border-b-0 lg:border-r border-sidebar-border p-4 sm:p-6 lg:min-h-screen">
+          <div className="flex items-center gap-3 mb-6 lg:mb-8">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Calculator className="h-6 w-6 text-primary" />
+              <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">Indian Financial Runway</h1>
-              <p className="text-sm text-muted-foreground">Plan your financial future</p>
+              <h1 className="text-lg sm:text-xl font-bold text-sidebar-foreground">Indian Financial Runway</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">Plan your financial future</p>
             </div>
           </div>
 
-          <div className="space-y-6">
+          {/* Mobile: 2-column grid, Desktop: single column */}
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
             {/* Initial Fund */}
             <div className="space-y-2">
-              <Label htmlFor="initial-fund" className="text-sidebar-foreground font-medium">
+              <Label htmlFor="initial-fund" className="text-sidebar-foreground font-medium text-sm">
                 Initial Fund (Lakhs)
               </Label>
               <Input
@@ -166,17 +167,17 @@ export function RunwayCalculator() {
                 type="number"
                 value={initialFundLakhs}
                 onChange={(e) => setInitialFundLakhs(Math.max(0, Number(e.target.value)))}
-                className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground"
+                className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground h-9 sm:h-10"
                 min={0}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground truncate">
                 = ₹{formatIndianNumber(initialFundLakhs * 100000)}
               </p>
             </div>
 
             {/* Monthly Expense */}
             <div className="space-y-2">
-              <Label htmlFor="monthly-expense" className="text-sidebar-foreground font-medium">
+              <Label htmlFor="monthly-expense" className="text-sidebar-foreground font-medium text-sm">
                 Monthly Expense (₹)
               </Label>
               <Input
@@ -184,21 +185,21 @@ export function RunwayCalculator() {
                 type="number"
                 value={monthlyExpense}
                 onChange={(e) => setMonthlyExpense(Math.max(0, Number(e.target.value)))}
-                className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground"
+                className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground h-9 sm:h-10"
                 min={0}
               />
-              <p className="text-xs text-muted-foreground">
-                Year 1 Cost: ₹{formatIndianNumber(monthlyExpense * 12)}
+              <p className="text-xs text-muted-foreground truncate">
+                Year 1: ₹{formatIndianNumber(monthlyExpense * 12)}
               </p>
             </div>
 
             {/* Interest Rate */}
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sidebar-foreground font-medium">
-                  Annual Interest Rate
+                <Label className="text-sidebar-foreground font-medium text-sm">
+                  Interest Rate
                 </Label>
-                <span className="text-sm font-semibold text-primary">{interestRate}%</span>
+                <span className="text-xs sm:text-sm font-semibold text-primary">{interestRate}%</span>
               </div>
               <Slider
                 value={[interestRate]}
@@ -206,7 +207,7 @@ export function RunwayCalculator() {
                 min={0}
                 max={20}
                 step={0.5}
-                className="py-2"
+                className="py-1 sm:py-2"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
@@ -215,12 +216,12 @@ export function RunwayCalculator() {
             </div>
 
             {/* Inflation Rate */}
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sidebar-foreground font-medium">
-                  Annual Inflation Rate
+                <Label className="text-sidebar-foreground font-medium text-sm">
+                  Inflation Rate
                 </Label>
-                <span className="text-sm font-semibold text-destructive">{inflationRate}%</span>
+                <span className="text-xs sm:text-sm font-semibold text-destructive">{inflationRate}%</span>
               </div>
               <Slider
                 value={[inflationRate]}
@@ -228,7 +229,7 @@ export function RunwayCalculator() {
                 min={0}
                 max={15}
                 step={0.5}
-                className="py-2"
+                className="py-1 sm:py-2"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
@@ -239,31 +240,31 @@ export function RunwayCalculator() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Hero Stat */}
-          <Card className="mb-8 bg-gradient-to-br from-card to-secondary border-border">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <TrendingDown className="h-8 w-8 text-primary" />
+          <Card className="mb-4 sm:mb-6 lg:mb-8 bg-gradient-to-br from-card to-secondary border-border">
+            <CardContent className="p-4 sm:pt-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 rounded-full bg-primary/10 shrink-0">
+                  <TrendingDown className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-sm uppercase tracking-wide font-medium">
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-xs sm:text-sm uppercase tracking-wide font-medium">
                     Your money will last for
                   </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl lg:text-6xl font-bold text-primary">
+                  <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                    <span className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">
                       {runwayYears}
                     </span>
-                    <span className="text-2xl lg:text-3xl font-medium text-foreground">
+                    <span className="text-xl sm:text-2xl lg:text-3xl font-medium text-foreground">
                       {runwayYears === 1 ? "Year" : "Years"}
                     </span>
                     {runwayMonths > 0 && (
                       <>
-                        <span className="text-3xl lg:text-4xl font-bold text-primary">
+                        <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
                           {runwayMonths}
                         </span>
-                        <span className="text-xl lg:text-2xl font-medium text-foreground">
+                        <span className="text-lg sm:text-xl lg:text-2xl font-medium text-foreground">
                           {runwayMonths === 1 ? "Month" : "Months"}
                         </span>
                       </>
@@ -275,30 +276,32 @@ export function RunwayCalculator() {
           </Card>
 
           {/* Chart */}
-          <Card className="mb-8 bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-card-foreground flex items-center gap-2">
-                <IndianRupee className="h-5 w-5 text-primary" />
+          <Card className="mb-4 sm:mb-6 lg:mb-8 bg-card border-border">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-card-foreground flex items-center gap-2 text-base sm:text-lg">
+                <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Fund Balance Over Time
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+              <div className="h-56 sm:h-72 lg:h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 10 }}>
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.01 250)" />
                     <XAxis
                       dataKey="year"
                       stroke="oklch(0.65 0 0)"
-                      tick={{ fill: "oklch(0.65 0 0)" }}
+                      tick={{ fill: "oklch(0.65 0 0)", fontSize: 10 }}
                       axisLine={{ stroke: "oklch(0.25 0.01 250)" }}
-                      label={{ value: "Year", position: "bottom", fill: "oklch(0.65 0 0)" }}
+                      label={{ value: "Year", position: "bottom", fill: "oklch(0.65 0 0)", fontSize: 11, dy: 10 }}
+                      interval="preserveStartEnd"
                     />
                     <YAxis
                       stroke="oklch(0.65 0 0)"
-                      tick={{ fill: "oklch(0.65 0 0)" }}
+                      tick={{ fill: "oklch(0.65 0 0)", fontSize: 10 }}
                       axisLine={{ stroke: "oklch(0.25 0.01 250)" }}
                       tickFormatter={formatYAxis}
+                      width={50}
                     />
                     <Tooltip
                       contentStyle={{
@@ -306,6 +309,8 @@ export function RunwayCalculator() {
                         border: "1px solid oklch(0.25 0.01 250)",
                         borderRadius: "8px",
                         color: "oklch(0.96 0 0)",
+                        fontSize: "12px",
+                        padding: "8px 12px",
                       }}
                       formatter={(value: number) => [`₹${formatIndianNumber(value)}`, "Balance"]}
                       labelFormatter={(label) => `Year ${label}`}
@@ -315,9 +320,9 @@ export function RunwayCalculator() {
                       type="monotone"
                       dataKey="balance"
                       stroke="oklch(0.72 0.18 160)"
-                      strokeWidth={3}
-                      dot={{ fill: "oklch(0.72 0.18 160)", strokeWidth: 0, r: 4 }}
-                      activeDot={{ r: 6, fill: "oklch(0.72 0.18 160)" }}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5, fill: "oklch(0.72 0.18 160)" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -327,42 +332,42 @@ export function RunwayCalculator() {
 
           {/* Breakdown Table */}
           <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-card-foreground">Year-by-Year Breakdown</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-card-foreground text-base sm:text-lg">Year-by-Year Breakdown</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 sm:p-6 sm:pt-0">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="text-xs sm:text-sm">
                   <TableHeader>
                     <TableRow className="border-border hover:bg-secondary/50">
-                      <TableHead className="text-muted-foreground font-semibold">Year</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Prev. Balance</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Interest ({interestRate}%)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Opening Balance</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Cost (+{inflationRate}% YoY)</TableHead>
-                      <TableHead className="text-muted-foreground font-semibold text-right">Balance</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold whitespace-nowrap px-2 sm:px-4">Year</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right whitespace-nowrap px-2 sm:px-4 hidden sm:table-cell">Prev. Balance</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right whitespace-nowrap px-2 sm:px-4 hidden md:table-cell">Interest ({interestRate}%)</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right whitespace-nowrap px-2 sm:px-4">Opening</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right whitespace-nowrap px-2 sm:px-4">Cost</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold text-right whitespace-nowrap px-2 sm:px-4">Balance</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {yearlyData.map((row) => (
                       <TableRow key={row.year} className={`border-border hover:bg-secondary/50 ${row.isPartialYear ? "bg-primary/5" : ""}`}>
-                        <TableCell className="font-medium text-foreground">
+                        <TableCell className="font-medium text-foreground px-2 sm:px-4">
                           {row.isPartialYear ? `${row.year} (${row.remainingMonths}m)` : row.year}
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground tabular-nums">
+                        <TableCell className="text-right text-muted-foreground tabular-nums px-2 sm:px-4 hidden sm:table-cell">
                           {row.year === 1 ? "-" : formatIndianNumber(row.previousBalance)}
                         </TableCell>
-                        <TableCell className="text-right text-primary tabular-nums">
+                        <TableCell className="text-right text-primary tabular-nums px-2 sm:px-4 hidden md:table-cell">
                           {row.year === 1 ? "-" : `+${formatIndianNumber(row.interestAdded)}`}
                         </TableCell>
-                        <TableCell className="text-right text-foreground tabular-nums">
+                        <TableCell className="text-right text-foreground tabular-nums px-2 sm:px-4">
                           {formatIndianNumber(row.openingBalance)}
                         </TableCell>
-                        <TableCell className="text-right text-destructive tabular-nums">
+                        <TableCell className="text-right text-destructive tabular-nums px-2 sm:px-4">
                           -{formatIndianNumber(row.yearlyCost)}
                           {row.isPartialYear && <span className="text-xs ml-1">({row.remainingMonths}m)</span>}
                         </TableCell>
-                        <TableCell className={`text-right font-medium tabular-nums ${row.closingBalance < 0 ? "text-destructive" : "text-foreground"}`}>
+                        <TableCell className={`text-right font-medium tabular-nums px-2 sm:px-4 ${row.closingBalance < 0 ? "text-destructive" : "text-foreground"}`}>
                           {formatIndianNumber(row.closingBalance)}
                         </TableCell>
                       </TableRow>
