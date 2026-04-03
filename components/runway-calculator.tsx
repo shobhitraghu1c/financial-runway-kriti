@@ -77,6 +77,7 @@ export function RunwayCalculator() {
     let yearlyCost = monthlyExpense * 12 // Year 1 cost
     let year = 0
     let finalMonths = 0
+    let fullYears = 0
 
     // Year 1 opening is the initial fund
     let openingBalance = initialFundLakhs * 100000
@@ -91,8 +92,6 @@ export function RunwayCalculator() {
         openingBalance = previousBalance + interestAdded
       }
       
-      // Calculate next year's cost (after inflation)
-      const nextYearlyCost = yearlyCost * (1 + inflationRate / 100)
       const currentMonthlyCost = yearlyCost / 12
       
       // Deduct yearly cost from opening balance to get closing balance
@@ -107,59 +106,32 @@ export function RunwayCalculator() {
         closingBalance,
       })
       
-      // If balance goes zero or negative, stop
+      // If balance goes zero or negative, this year is NOT complete
+      // Calculate how many months we could actually afford
       if (closingBalance <= 0) {
-        // Calculate remaining months if balance went negative
-        if (closingBalance < 0) {
-          // How many months could we actually afford?
-          const actualMonths = Math.floor(openingBalance / currentMonthlyCost)
-          finalMonths = actualMonths
-          // Update last entry to show partial year
-          data[data.length - 1].isPartialYear = true
-          data[data.length - 1].remainingMonths = actualMonths
-        }
+        // Remaining Months = Opening Balance / Monthly Cost
+        const actualMonths = Math.floor(openingBalance / currentMonthlyCost)
+        finalMonths = actualMonths
+        // Update last entry to show partial year
+        data[data.length - 1].isPartialYear = true
+        data[data.length - 1].remainingMonths = actualMonths
+        // Full years is the previous year (since this year is incomplete)
+        fullYears = year - 1
         break
       }
       
-      // Check if closing balance can cover next year's expense
-      // If not, calculate remaining months and stop
-      const nextYearOpening = closingBalance * (1 + interestRate / 100)
-      if (nextYearOpening < nextYearlyCost) {
-        // Can't afford full next year - calculate remaining months
-        const nextMonthlyCost = nextYearlyCost / 12
-        const remainingMonths = Math.floor(nextYearOpening / nextMonthlyCost)
-        
-        if (remainingMonths > 0) {
-          // Add partial year entry
-          year++
-          const partialInterest = closingBalance * (interestRate / 100)
-          const partialOpening = closingBalance + partialInterest
-          const partialCost = nextMonthlyCost * remainingMonths
-          
-          data.push({
-            year,
-            previousBalance: closingBalance,
-            interestAdded: partialInterest,
-            openingBalance: partialOpening,
-            yearlyCost: partialCost,
-            closingBalance: partialOpening - partialCost,
-            isPartialYear: true,
-            remainingMonths,
-          })
-        }
-        finalMonths = remainingMonths
-        break
-      }
+      // This year completed successfully
+      fullYears = year
       
       // Store this year's closing balance for next iteration
       previousBalance = closingBalance
       
       // Inflate yearly cost for next year
-      yearlyCost = nextYearlyCost
+      yearlyCost = yearlyCost * (1 + inflationRate / 100)
     }
 
     return {
-      runwayYears: year - (finalMonths > 0 && finalMonths < 12 ? 1 : 0),
+      runwayYears: fullYears,
       runwayMonths: finalMonths,
       yearlyData: data,
     }
