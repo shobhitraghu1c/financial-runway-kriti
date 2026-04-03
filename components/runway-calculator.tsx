@@ -74,19 +74,28 @@ export function RunwayCalculator() {
     let yearlyCost = monthlyExpense * 12 // Year 1 cost
     let year = 0
 
-    // Initial state
-    const openingBalance = balance
-
     while (balance > 0 && year < 100) {
       year++
       const yearOpeningBalance = balance
       
-      // Add interest
-      const interestEarned = balance * (interestRate / 100)
-      balance = balance + interestEarned
+      // Step 1: Deduct annual expense at the START of the year
+      const balanceAfterExpense = balance - yearlyCost
       
-      // Subtract cost
-      balance = balance - yearlyCost
+      // If balance goes negative after expense, record partial year and stop
+      if (balanceAfterExpense <= 0) {
+        data.push({
+          year,
+          openingBalance: yearOpeningBalance,
+          interestEarned: 0,
+          yearlyCost,
+          closingBalance: balanceAfterExpense,
+        })
+        break
+      }
+      
+      // Step 2: Apply interest on the remaining balance (after expense deduction)
+      const interestEarned = balanceAfterExpense * (interestRate / 100)
+      balance = balanceAfterExpense + interestEarned
       
       data.push({
         year,
@@ -96,10 +105,8 @@ export function RunwayCalculator() {
         closingBalance: balance,
       })
       
-      // Compound inflation for next year's cost
+      // Step 3: Compound inflation for next year's cost
       yearlyCost = yearlyCost * (1 + inflationRate / 100)
-      
-      if (balance <= 0) break
     }
 
     return {
